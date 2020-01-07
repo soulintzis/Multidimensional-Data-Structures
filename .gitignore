@@ -1,3 +1,8 @@
 ips.txt
 bitarrays_test.py
 tset.txt
+*.bin
+*.txt
+*.txt
+BloomFilters/test.txt
+*.txt
