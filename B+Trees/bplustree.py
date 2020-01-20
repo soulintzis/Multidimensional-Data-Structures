@@ -1,8 +1,23 @@
-'''Read data set file as input'''
-file = open("../Datasets/million_usernames.txt","r")
-print(file)
+def importData(file_name):
+    while True:
+        try:
+            with open(file_name, 'r') as f:
+                return f.read().split('\n')
+            f.close()
+        except FileNotFoundError:
+            print('Wrong file or file path')
+            file_name = input('Please type in the path to your file and press "Enter":')
+        else:
+            break
 
-class Node(object):
+def exportData(output_filename, output_data):
+    with open(output_filename, 'w') as f:
+        for items in output_data:
+            f.write("%s\n" %items)
+    f.close()
+    print('The data exported successfully')
+
+class Node:
     '''Nodes stores keys and values and values are stored as a a linked list under each key'''
     def __init__(self, order):
         self.order = order
@@ -54,7 +69,7 @@ class Node(object):
 
     def show(self, counter=0):
         '''Prints the keys at each level'''
-        print counter, str(self.keys)
+        print(counter, str(self.keys))
 
         if not self.leaf:
             for item in self.values:
