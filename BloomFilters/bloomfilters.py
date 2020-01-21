@@ -1,5 +1,5 @@
 from random import shuffle
-# import murmurhash
+import murmurhash
 import bitarray 
 import hashlib 
 import array
