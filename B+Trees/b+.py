@@ -69,3 +69,29 @@ class Node():
             return True
         else:
             return False
+
+class BplusTree():
+    def __init__(self, size = 3):
+        self.root = Node(size)
+
+    def search(self, node, key):
+        #for the searched node and key value, it returns the index where the key should be inserted
+        #and the list of the values
+        for k, item in enumerate(node.keys):
+            if key < item:
+                return node.values[k], k
+
+        return node.values[k+1],k+1
+
+    # def _merge():
+        
+    
+
+
+node = Node(3)
+node.add("a","aa")
+node.add("b","bb")
+node.add("c","cc")
+node.splitNode()
+node.printNode()
+node.add("d","dd")
