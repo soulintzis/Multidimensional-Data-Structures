@@ -1,3 +1,6 @@
+from collections import Counter
+import matplotlib.pyplot as plt 
+import numpy as np
 import bitarray
 import hashlib 
 import random
@@ -41,16 +44,33 @@ class BloomFilter:
                 return False
         return True
 
-    def add_list_to_filter(self, list_name, hash_function):
+    def add_list_to_filter(self, items, hash_function):
         # Initial call to print 0% progress
         self.printProgressBar(0, len(dataset), prefix = 'Progress:', suffix = 'Complete', length = 50)
         add_start = time.time()
-        for i, item in enumerate(list_name):
+        for i, item in enumerate(items):
             self.add_item_to_filter(item, hash_function)
             # Update Progress Bar
             self.printProgressBar(i + 1, len(dataset), prefix = 'Progress:', suffix = 'Complete', length = 50)
         add_end = time.time()
         print('Total time: {}s.'.format(round(add_end - add_start, 5)))
+
+    def check_list(self, items, hash_function):
+        # Initial call to print 0% progress
+        results = dict()
+        self.printProgressBar(0, len(items), prefix = 'Progress:', suffix = 'Complete', length = 50)
+        add_start = time.time()
+        for i, item in enumerate(items):
+            result = self.check_item(item, hash_function)
+            if result:
+                results[item] = 1
+            else:
+                results[item] = 0
+            # Update Progress Bar
+            self.printProgressBar(i + 1, len(items), prefix = 'Progress:', suffix = 'Complete', length = 50)
+        add_end = time.time()
+        print('Total time: {}s.'.format(round(add_end - add_start, 5)))
+        return results
 
     @staticmethod
     def culc_optimal_params(fp_prop, bm_size):
@@ -155,10 +175,12 @@ else:
     b_filter = BloomFilter(int(prop_false_positive), int(bm_size), int(bit_array_size), int(num_of_hf))
     b_filter.add_list_to_filter(dataset, hash_functions[0])
     while True:
-        print('1-- Add item to the Bloom filter.')
-        print('2-- Check if an item exists')
-        print('3-- Test the BM using the testing dataset')
-        print('4-- Exit')
+        print('1-- Add an item to the Bloom filter.')
+        print('2-- Add a file to the Bloom filter.')
+        print('3-- Check if an item exists')
+        print('4-- Import a file for checking')
+        print('5-- Test the BM using the testing dataset')
+        print('6-- Exit')
         choise = None
         while choise is None:
             choise = input('Pick an option: ')
@@ -167,13 +189,55 @@ else:
             elif choise == '2':
                 choise = 2
             elif choise == '3':
-                choise = 3
+                choise = 3       
             elif choise == '4':
+                choise = 4
+            elif choise == '6':
                 exit(0)
             else:
                 choise = None
                 print('Please try again!')
         if choise == 1:
-           value = input('Give the item that you want top insert: \n')
+           value = input('Give the item that you want to insert: \n')
            b_filter.add_item_to_filter(value, hash_functions[0])
            print('The item was inserted successfully')
+        if choise == 2:
+            file_name = input('Please type in the path to your file and press "Enter":\n')
+            dataset_temp = importData(file_name) #import the dataset
+            dataset_temp_size = len(dataset_temp) #get the size of the dataset
+            if bm_size < dataset_size + dataset_temp_size:
+                print('You can\'t import that file because it surpasses the BM\'s capacity.')
+            else:
+                print('You imported {} items'.format(dataset_temp_size))
+                b_filter.add_list_to_filter(dataset_temp, hash_functions[0])
+                dataset = dataset + dataset_temp
+        if choise == 3:
+            value = input('Give the item that you want to check: \n')
+            result = b_filter.check_item(value, hash_functions[0])
+            if result:
+                print('The item {} exists on the Bloom Filter'.format(value))
+            else:
+                print('The item {} doesn\'t exists on the Bloom Filter'.format(value))
+        if choise == 4:
+            file_name = input('Please type in the path to your file and press "Enter":\n')
+            im_test_data = importData(file_name)
+            test_data_size = len(im_test_data)                
+            print('You imported {} items for testing'.format(test_data_size))
+            results = b_filter.check_list(im_test_data, hash_functions[0])
+            graph = input('Do you want to display the results on a graph?(y/n)\n')
+            if graph == 'y' or graph == 'Y':
+                res = dict(Counter(results.values()))
+                keys = list(res.keys())
+                values = list(res.values())
+                barlist = plt.bar(keys, values)
+                plt.xticks(np.arange(min(keys), max(keys)+1, 1.0))
+                barlist[1].set_color('r')
+                # barlist[1].set_color('r')
+                barlist[1].set_label('Does not exists')
+                barlist[0].set_label('Exists')
+                plt.legend(loc="upper left")
+                # access the bar attributes to place the text in the appropriate location
+                for bar in barlist:
+                    yval = bar.get_height()
+                    plt.text(bar.get_x(), yval + .005, yval)
+                plt.show()
