@@ -38,4 +38,4 @@ for user in usernames:
 with open('dataset.txt','w') as f:
     for key, values in data.items():
         for value in values:
-            f.write(key + ':' + value + '\n')
+            f.write(key + '?&' + value + '\n')

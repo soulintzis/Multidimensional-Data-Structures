@@ -241,6 +241,6 @@ if __name__ == '__main__':
     bplus.add_list_to_bplustree(dataset)
     # bplus.show()
     start = time.time()
-    print(bplus.retrieve(''))
+    print(bplus.retrieve('Eatsofast'))
     end = time.time()
     print('Total time: {}s.'.format(round(end - start, 5)))
