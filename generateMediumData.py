@@ -4,7 +4,7 @@ data = dict()
 usernames = list()
 articles = list()
 
-num_of_users = int(input('How many users do you want to import: \n'))
+num_of_users = int(input('How many users do you want to import(Type "0" to take all the users from the dataset): \n'))
 
 with open("usernames.txt") as f:
     imported_usernames = f.read().split('\n')
