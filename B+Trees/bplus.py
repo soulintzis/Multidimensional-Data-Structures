@@ -49,8 +49,9 @@ class Node(object):
         for i, item in enumerate(self.keys):
             # If new key matches with the existing key, add it to the list of values
             if key == item:
-                self.values[i].append(value)
-                break
+                if not value in self.values[i]:
+                    self.values[i].append(value)
+                    break
 
             # If new key is smaller than the existing key, insert new key to the left of the existing key
             elif key < item:
@@ -170,18 +171,18 @@ class BPlusTree(object):
         """Prints the keys at each level."""
         self.root.show()
 
-    def add_list_to_bplustree(self, data):
+    def add_list_to_bplustree(self, dataset):
         # Initial call to print 0% progress
-        self.printProgressBar(0, len(data), prefix = 'Progress:', suffix = 'Complete', length = 50)
+        self.printProgressBar(0, len(dataset), prefix = 'Progress:', suffix = 'Complete', length = 50)
         add_start = time.time()
-        for i, item in enumerate(data):
-            data = item.split('?$')
+        for i, item in enumerate(dataset):
+            data = item.split('?&')
             if data != '' and len(data) > 1:
                 username = data[0].strip()
                 article = data[1].strip()
                 self.insert(username, article)
             # Update Progress Bar
-            self.printProgressBar(i + 1, len(data), prefix = 'Progress:', suffix = 'Complete', length = 50)
+            self.printProgressBar(i + 1, len(dataset), prefix = 'Progress:', suffix = 'Complete', length = 50)
         add_end = time.time()
         print('Total time: {}s.'.format(round(add_end - add_start, 5)))
 
@@ -238,9 +239,47 @@ if __name__ == '__main__':
     print('Initializing B+ tree...')
     bplus = BPlusTree(order=node_size)
     #Insert items from the dataset to bplus tree
+    print("Inserting dataset into the tree...")
     bplus.add_list_to_bplustree(dataset)
-    # bplus.show()
-    start = time.time()
-    print(bplus.retrieve('Eatsofast'))
-    end = time.time()
-    print('Total time: {}s.'.format(round(end - start, 5)))
+    while True:
+        print('1-- Add a key, value to the B+ Tree.')
+        print('2-- Add a file to the B+ Tree.')
+        print('3-- Retrieve values for a given key')
+        print('4-- Import a file for checking')
+        print('5-- Test the B+ Tree using the testing dataset')
+        print('6-- Display B+ Tree\'s properties')
+        print('7-- Exit')
+        choice = None
+        while choice is None:
+            choice = input('Pick an option: ')
+            if choice == '1':
+                key = input('Give the key that you want to insert: \n')
+                value = input('Give the value for the above key: \n')
+                bplus.insert(key, value)
+                print('The key, value was inserted successfully\n\n')
+            elif choice == '2':
+                file_name = input('Please type in the path to your file and press "Enter":\n')
+                dataset_temp = importData(file_name) #import the dataset
+                dataset_temp_size = len(dataset_temp) #get the size of the dataset
+                print('You imported {} items'.format(dataset_temp_size))
+                bplus.add_list_to_bplustree(dataset_temp)
+                dataset = dataset + dataset_temp
+            elif choice == '3':
+                key = input('Give the key that you want to retrieve: \n')
+                result = bplus.retrieve(key)
+                if result is not None:
+                    print('It contains the following values:\n')
+                    print(result)
+                else:
+                    print('Couldn\'t find the key\n')
+            elif choice == '4':
+                choice = 4
+            elif choice == '5':
+                choice = 5
+            elif choice == '6':
+                choice = 6
+            elif choice == '7':
+                exit(0)
+            else:
+                choice = None
+                print('Please try again!')
