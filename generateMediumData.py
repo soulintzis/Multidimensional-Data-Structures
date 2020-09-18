@@ -4,10 +4,16 @@ data = dict()
 usernames = list()
 articles = list()
 
+num_of_users = int(input('How many users do you want to import: \n'))
+
 with open("usernames.txt") as f:
     imported_usernames = f.read().split('\n')
-    for user in imported_usernames:              
+    if num_of_users > len(imported_usernames) or num_of_users == 0:
+        num_of_users = len(imported_usernames)
+    for i, user in enumerate(imported_usernames): 
         usernames.append(user)
+        if i == num_of_users:
+            break
     f.close()
     print('Usernames imported successfully')
 
@@ -18,7 +24,8 @@ with open("articles.txt") as f:
     f.close()
     print('Articles imported successfully')
 
-max_number_of_articles_per_user = 10
+
+max_number_of_articles_per_user = int(input('Which is the maximum number of articles per user: \n'))
 
 for user in usernames: 
     num_articles = random.randint(1, max_number_of_articles_per_user)
