@@ -1,3 +1,6 @@
+from collections import Counter
+import matplotlib.pyplot as plt 
+import numpy as np
 import random
 import time
 import os
@@ -18,12 +21,12 @@ def importData(file_name):
         else:
             break
 
-def exportData(output_filename, output_data):
-    with open(output_filename, 'w') as f:
-        for items in output_data:
-            f.write("%s\n" %items)
-    f.close()
-    print('The data exported successfully')
+# def exportData(output_filename, output_data):
+#     with open(output_filename, 'w') as f:
+#         for items in output_data:
+#             f.write("%s\n" %items)
+#     f.close()
+#     print('The data exported successfully')
 
 class Node(object):
     """Each node stores keys and values. Keys are not unique to each value, and as such values are
@@ -167,6 +170,22 @@ class BPlusTree(object):
 
         return None
 
+    def membership_query(self, key, value):
+        """Returns a value for a given key, and None if the key does not exist."""
+        child = self.root
+
+        while not child.leaf:
+            child, index = self._find(child, key)
+
+        for i, item in enumerate(child.keys):
+            if key == item:
+                values = child.values[i]
+                if value in values:
+                    return True
+                else:
+                    return None
+        return None
+
     def show(self):
         """Prints the keys at each level."""
         self.root.show()
@@ -185,6 +204,27 @@ class BPlusTree(object):
             self.printProgressBar(i + 1, len(dataset), prefix = 'Progress:', suffix = 'Complete', length = 50)
         add_end = time.time()
         print('Total time: {}s.'.format(round(add_end - add_start, 5)))
+
+    def check_items(self, test_data):
+        results = list()
+        # Initial call to print 0% progress
+        self.printProgressBar(0, len(test_data), prefix = 'Progress:', suffix = 'Complete', length = 50)
+        add_start = time.time()
+        for i, item in enumerate(test_data):
+            data = item.split('?&')
+            if data != '' and len(data) > 1:
+                username = data[0].strip()
+                article = data[1].strip()
+                result = self.membership_query(username, article)
+                if result is True:
+                    results.append(1)
+                else:
+                    results.append(0)
+            # Update Progress Bar
+            self.printProgressBar(i + 1, len(test_data), prefix = 'Progress:', suffix = 'Complete', length = 50)
+        add_end = time.time()
+        print('Total time: {}s.'.format(round(add_end - add_start, 5)))
+        return results
 
     # Print iterations progress
     @staticmethod
@@ -245,10 +285,11 @@ if __name__ == '__main__':
         print('1-- Add a key, value to the B+ Tree.')
         print('2-- Add a file to the B+ Tree.')
         print('3-- Retrieve values for a given key')
-        print('4-- Import a file for checking')
-        print('5-- Test the B+ Tree using the testing dataset')
-        print('6-- Display B+ Tree\'s properties')
-        print('7-- Exit')
+        print('4-- Do a membership query')
+        print('5-- Import a file for bulk membership queries')
+        print('6-- Test the B+ Tree using the testing dataset')
+        print('7-- Print the B+ Tree\'s')
+        print('8-- Exit')
         choice = None
         while choice is None:
             choice = input('Pick an option: ')
@@ -273,13 +314,53 @@ if __name__ == '__main__':
                 else:
                     print('Couldn\'t find the key\n')
             elif choice == '4':
-                choice = 4
+                key = input('Insert the key: \n')
+                value = input('Insert the value: \n')
+                result = bplus.membership_query(key, value)
+                if result is True:
+                    print('The value({}) for the key({}) exists on the B+ Tree. \n'.format(value, key))
+                else:
+                    print('The value({}) for the key({}) doesn\'t exists on the B+ Tree. \n'.format(value, key))
             elif choice == '5':
-                choice = 5
+                file_name = input('Please type in the path to your file and press "Enter":\n')
+                im_test_data = importData(file_name)
+                test_data_size = len(im_test_data)                
+                print('You imported {} items for testing'.format(test_data_size))
+                results = bplus.check_items(im_test_data)
+                graph = input('Do you want to display the results on a graph?(y/n)\n')
+                if graph == 'y' or graph == 'Y':
+                    res = dict(Counter(results))
+                    print(res)
+                    keys = list(res.keys())
+                    values = list(res.values())
+                    barlist = plt.bar(keys, values)
+                    plt.xticks(np.arange(min(keys), max(keys)+1, 1.0))
+                    barlist[0].set_color('r')
+                    # barlist[1].set_color('r')
+                    barlist[0].set_label('Does not exists')
+                    barlist[1].set_label('Exists')
+                    plt.legend(loc="upper right")
+                    # access the bar attributes to place the text in the appropriate location
+                    for bar in barlist:
+                        yval = bar.get_height()
+                        plt.text(bar.get_x(), yval + .005, yval)
+                    plt.show()
             elif choice == '6':
-                choice = 6
+                if len(testing_dataset) > 0:
+                    results = bplus.check_items(testing_dataset)
+                    res = dict(Counter(testing_dataset.values()))
+                    print(res)
+                    print(testing_dataset)
+                    graph = input('Do you want to display the results on a graph?(y/n)\n')
+                else:
+                    print('Sorry! There is no testing dataset.\n')
             elif choice == '7':
+                print('------------------------------------------------------------------------------------------------------')
+                bplus.show()
+                print('------------------------------------------------------------------------------------------------------\n')
+            elif choice == '8':
                 exit(0)
             else:
                 choice = None
                 print('Please try again!')
+            
